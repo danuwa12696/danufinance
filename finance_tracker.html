@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker - Danuka Lakshan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <!-- jsPDF for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        danger: '#EF4444',
+                        dark: '#0F172A',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        neon: ['Orbitron', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Neon Glow Effect */
+        .neon-box {
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .neon-box:hover {
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.8);
+        }
+
+        /* Enhanced Neon Text with Gradient */
+        .neon-author {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 2rem;
+            background: linear-gradient(45deg, #00ff88, #00ffff, #00ff88);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.8)) drop-shadow(0 0 20px rgba(0, 255, 136, 0.6)) drop-shadow(0 0 30px rgba(0, 255, 136, 0.4));
+            animation: neon-glow 3s ease-in-out infinite, gradient-shift 4s ease infinite;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        @keyframes neon-glow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.8)) drop-shadow(0 0 20px rgba(0, 255, 136, 0.6)) drop-shadow(0 0 30px rgba(0, 255, 136, 0.4));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 20px rgba(0, 255, 255, 1)) drop-shadow(0 0 40px rgba(0, 255, 255, 0.8)) drop-shadow(0 0 60px rgba(0, 255, 255, 0.6));
+            }
+        }
+
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Floating Animation for Author Section */
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Pulse Border */
+        .pulse-border {
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-border {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
+            }
+
+            50% {
+                box-shadow: 0 0 0 15px rgba(0, 255, 136, 0);
+            }
+        }
+
+        /* Tab Active State */
+        .tab-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Note Card Hover */
+        .note-card {
+            transition: all 0.3s ease;
+        }
+
+        .note-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Bubble Animation Background */
+        .bubble-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.1));
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: rise linear infinite;
+            backdrop-filter: blur(2px);
+        }
+
+        .bubble:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            left: 10%;
+            animation-duration: 15s;
+            animation-delay: 0s;
+        }
+
+        .bubble:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            left: 25%;
+            animation-duration: 12s;
+            animation-delay: 2s;
+        }
+
+        .bubble:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            left: 40%;
+            animation-duration: 18s;
+            animation-delay: 4s;
+        }
+
+        .bubble:nth-child(4) {
+            width: 70px;
+            height: 70px;
+            left: 60%;
+            animation-duration: 14s;
+            animation-delay: 1s;
+        }
+
+        .bubble:nth-child(5) {
+            width: 90px;
+            height: 90px;
+            left: 75%;
+            animation-duration: 16s;
+            animation-delay: 3s;
+        }
+
+        .bubble:nth-child(6) {
+            width: 50px;
+            height: 50px;
+            left: 85%;
+            animation-duration: 11s;
+            animation-delay: 5s;
+        }
+
+        @keyframes rise {
+            0% {
+                bottom: -100px;
+                transform: translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.6;
+            }
+
+            90% {
+                opacity: 0.6;
+            }
+
+            100% {
+                bottom: 110vh;
+                transform: translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Alarm Badge */
+        .alarm-badge {
+            animation: pulse-alarm 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-alarm {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+        }
+
+        /* Time Display */
+        .time-display {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 antialiased min-h-screen flex flex-col">
+
+    <!-- Animated Bubble Background -->
+    <div class="bubble-container">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <div class="flex-grow max-w-7xl mx-auto w-full p-6 md:p-12 relative z-10">
+        <!-- Header -->
+        <header class="mb-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+                    <i data-feather="layout" class="text-indigo-600 w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Finance Dashboard</h1>
+                    <p class="text-gray-500 font-medium">Manage your income, expenses & notes</p>
+                </div>
+            </div>
+
+            <button onclick="downloadReport()"
+                class="flex items-center gap-2 bg-white text-gray-700 px-5 py-2.5 rounded-xl border border-gray-200 font-semibold shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95">
+                <i data-feather="download" class="w-5 h-5"></i>
+                <span class="hidden sm:inline">Export Report</span>
+            </button>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="flex gap-4 mb-8 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard"
+                class="tab-active flex-1 py-3 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                <i data-feather="bar-chart-2" class="w-5 h-5"></i>
+                <span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('notes')" id="tab-notes"
+                class="flex-1 py-3 px-6 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                <i data-feather="file-text" class="w-5 h-5"></i>
+                <span>Personal Notes</span>
+            </button>
+            <button onclick="switchTab('reset')" id="tab-reset"
+                class="flex-1 py-3 px-6 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                <i data-feather="refresh-cw" class="w-5 h-5"></i>
+                <span>Reset Data</span>
+            </button>
+            <button onclick="switchTab('admin')" id="tab-admin"
+                class="flex-1 py-3 px-6 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                <i data-feather="user" class="w-5 h-5"></i>
+                <span>Admin Info</span>
+            </button>
+        </div>
+
+        <!-- Dashboard Tab Content -->
+        <div id="content-dashboard" class="tab-content">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Income Card -->
+                <div
+                    class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-transform border border-gray-100 flex items-center justify-between group">
+                    <div>
+                        <p class="text-emerald-600 text-xs font-bold uppercase tracking-wider mb-1">Total Income</p>
+                        <p class="text-2xl font-bold text-gray-900" id="total_income">LKR 0.00</p>
+                    </div>
+                    <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                        <i data-feather="trending-up" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <!-- Expense Card -->
+                <div
+                    class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-transform border border-gray-100 flex items-center justify-between group">
+                    <div>
+                        <p class="text-rose-600 text-xs font-bold uppercase tracking-wider mb-1">Total Expenses</p>
+                        <p class="text-2xl font-bold text-gray-900" id="total_expense">LKR 0.00</p>
+                    </div>
+                    <div class="p-3 bg-rose-50 rounded-xl text-rose-600">
+                        <i data-feather="trending-down" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <!-- Balance Card -->
+                <div
+                    class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-transform border border-gray-100 flex items-center justify-between relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">Net Balance</p>
+                        <p class="text-2xl font-bold text-gray-900" id="net_balance">LKR 0.00</p>
+                    </div>
+                    <div class="p-3 bg-indigo-50 rounded-xl text-indigo-600 relative z-10">
+                        <i data-feather="credit-card" class="w-6 h-6"></i>
+                    </div>
+                    <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500" id="balance_indicator"></div>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+
+                <!-- Left Column: Form & Chart -->
+                <div class="xl:col-span-1 space-y-8">
+
+                    <!-- Add Transaction Form -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 neon-box">
+                        <h2 class="text-xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+                            <i data-feather="plus-circle" class="w-5 h-5"></i> Add New Entry
+                        </h2>
+
+                        <form id="transactionForm" onsubmit="addTransaction(event)">
+                            <!-- Type Selection -->
+                            <div class="flex gap-4 mb-6">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="type" value="income" class="hidden peer"
+                                        onchange="updateTypeStyles()">
+                                    <div id="btn-income"
+                                        class="text-center py-3 rounded-xl border-2 border-transparent bg-gray-50 text-gray-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 peer-checked:border-emerald-500 font-medium transition-all flex items-center justify-center gap-2">
+                                        <i data-feather="arrow-up-circle" class="w-4 h-4"></i> Income
+                                    </div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="type" value="expense" checked class="hidden peer"
+                                        onchange="updateTypeStyles()">
+                                    <div id="btn-expense"
+                                        class="text-center py-3 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 font-medium transition-all flex items-center justify-center gap-2 shadow-sm">
+                                        <i data-feather="arrow-down-circle" class="w-4 h-4"></i> Expense
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Inputs -->
+                            <div class="space-y-4">
+                                <input type="text" id="descInput" placeholder="Description (e.g., Salary, Food)"
+                                    required
+                                    class="w-full p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none">
+                                <input type="number" id="amountInput" placeholder="Amount (LKR)" required step="0.01"
+                                    min="0"
+                                    class="w-full p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none">
+                            </div>
+
+                            <button type="submit"
+                                class="mt-6 w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-md shadow-indigo-200">
+                                Add Transaction
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Chart Section -->
+                    <div
+                        class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 text-center h-[350px] flex flex-col justify-center">
+                        <h3 class="text-lg font-bold text-gray-700 mb-6">Financial Overview</h3>
+
+                        <div class="relative w-48 h-48 mx-auto rounded-full shadow-inner flex items-center justify-center"
+                            id="pieChart">
+                            <div
+                                class="absolute inset-4 bg-white rounded-full flex flex-col items-center justify-center shadow-lg z-10">
+                                <span class="text-gray-400 text-xs font-bold uppercase tracking-widest">Total</span>
+                                <span class="text-gray-900 text-lg font-bold" id="chartTotal">LKR 0</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center gap-6 mt-6">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                                <span class="text-xs text-gray-600 font-medium" id="incomeLegend">Income 0%</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                                <span class="text-xs text-gray-600 font-medium" id="expenseLegend">Expense 0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: List -->
+                <div class="xl:col-span-2">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 h-full">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-800">Recent Activity</h2>
+                            <span class="text-sm bg-gray-100 text-gray-600 py-1 px-3 rounded-full font-medium"
+                                id="entryCount">0 entries</span>
+                        </div>
+
+                        <div id="transactionList" class="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                            <!-- Transactions will be injected here -->
+                            <div
+                                class="text-center py-12 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                <p class="text-lg font-medium">No transactions yet</p>
+                                <p class="text-sm">Add your first income or expense!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Notes Tab Content -->
+        <div id="content-notes" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Add Note Form -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 sticky top-6">
+                        <!-- Current Date & Time Display -->
+                        <div
+                            class="mb-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">Current
+                                    Time</span>
+                                <i data-feather="clock" class="w-4 h-4 text-purple-600"></i>
+                            </div>
+                            <div class="time-display text-2xl font-bold" id="currentTime">--:--:--</div>
+                            <div class="text-sm text-gray-600 mt-1" id="currentDate">Loading...</div>
+                        </div>
+
+                        <!-- Remaining Alarms Summary -->
+                        <div
+                            class="mb-6 p-4 bg-gradient-to-r from-rose-50 to-orange-50 rounded-xl border border-rose-100">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <i data-feather="bell" class="w-4 h-4 text-rose-600"></i>
+                                    <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Active
+                                        Alarms</span>
+                                </div>
+                                <span
+                                    class="alarm-badge bg-rose-600 text-white text-xs font-bold px-3 py-1 rounded-full"
+                                    id="alarmCount">0</span>
+                            </div>
+                            <div class="mt-2 text-sm text-gray-600" id="nextAlarm">No upcoming alarms</div>
+                        </div>
+
+                        <h2 class="text-xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+                            <i data-feather="edit-3" class="w-5 h-5"></i> Add Personal Note
+                        </h2>
+
+                        <form id="noteForm" onsubmit="addNote(event)">
+                            <div class="space-y-4">
+                                <input type="text" id="noteTitleInput" placeholder="Note Title" required
+                                    class="w-full p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all outline-none font-semibold">
+                                <textarea id="noteContentInput" placeholder="Write your note here..." required rows="6"
+                                    class="w-full p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all outline-none resize-none"></textarea>
+
+                                <!-- Alarm/Reminder Option -->
+                                <div class="space-y-3">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="enableAlarm" onchange="toggleAlarmInput()"
+                                            class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                                        <span class="text-sm font-semibold text-gray-700">Set Reminder</span>
+                                        <i data-feather="bell" class="w-4 h-4 text-purple-600"></i>
+                                    </label>
+
+                                    <div id="alarmInputs" class="hidden space-y-2">
+                                        <input type="datetime-local" id="alarmDateTime"
+                                            class="w-full p-2.5 bg-purple-50 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all outline-none text-sm">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                class="mt-6 w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3.5 rounded-xl font-bold hover:from-purple-700 hover:to-indigo-700 active:scale-[0.98] transition-all shadow-md shadow-purple-200">
+                                Save Note
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Notes List -->
+                <div class="lg:col-span-2">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">My Notes</h2>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm bg-purple-100 text-purple-700 py-1 px-3 rounded-full font-medium"
+                                id="noteCount">0 notes</span>
+                            <button onclick="clearAllNotes()"
+                                class="text-sm bg-rose-100 text-rose-700 py-1 px-3 rounded-full font-medium hover:bg-rose-200 transition-colors">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="notesList" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Notes will be injected here -->
+                        <div
+                            class="col-span-2 text-center py-16 text-gray-400 bg-white rounded-2xl border border-dashed border-gray-200 shadow-sm">
+                            <i data-feather="book-open" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                            <p class="text-lg font-medium">No notes yet</p>
+                            <p class="text-sm">Start writing your personal notes!</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Reset Data Tab Content -->
+        <div id="content-reset" class="tab-content hidden">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-8">
+                    <div class="inline-block p-4 bg-rose-100 rounded-full mb-4">
+                        <i data-feather="alert-triangle" class="w-12 h-12 text-rose-600"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Reset Application Data</h2>
+                    <p class="text-gray-600">Clear your stored data to start fresh</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Reset Transactions -->
+                    <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+                        <div class="text-center mb-6">
+                            <div class="inline-block p-3 bg-orange-100 rounded-full mb-3">
+                                <i data-feather="dollar-sign" class="w-8 h-8 text-orange-600"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Clear Transactions</h3>
+                            <p class="text-sm text-gray-600">Remove all income and expense records</p>
+                        </div>
+                        <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
+                            <p class="text-xs text-orange-800 flex items-start gap-2">
+                                <i data-feather="info" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+                                <span>This will permanently delete all your financial transactions. This action cannot
+                                    be undone.</span>
+                            </p>
+                        </div>
+                        <button onclick="resetTransactions()"
+                            class="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white py-3 rounded-xl font-bold hover:from-orange-600 hover:to-rose-600 active:scale-95 transition-all shadow-md">
+                            Clear All Transactions
+                        </button>
+                    </div>
+
+                    <!-- Reset Notes -->
+                    <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+                        <div class="text-center mb-6">
+                            <div class="inline-block p-3 bg-purple-100 rounded-full mb-3">
+                                <i data-feather="file-text" class="w-8 h-8 text-purple-600"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Clear Notes</h3>
+                            <p class="text-sm text-gray-600">Remove all personal notes and reminders</p>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
+                            <p class="text-xs text-purple-800 flex items-start gap-2">
+                                <i data-feather="info" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+                                <span>This will permanently delete all your notes and alarms. This action cannot be
+                                    undone.</span>
+                            </p>
+                        </div>
+                        <button onclick="resetNotes()"
+                            class="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white py-3 rounded-xl font-bold hover:from-purple-600 hover:to-indigo-600 active:scale-95 transition-all shadow-md">
+                            Clear All Notes
+                        </button>
+                    </div>
+
+                    <!-- Reset Everything -->
+                    <div
+                        class="md:col-span-2 bg-gradient-to-br from-rose-50 to-red-50 p-8 rounded-2xl shadow-lg border-2 border-rose-200">
+                        <div class="text-center mb-6">
+                            <div class="inline-block p-3 bg-rose-600 rounded-full mb-3">
+                                <i data-feather="trash-2" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">Reset Everything</h3>
+                            <p class="text-sm text-gray-600">Clear all data and start completely fresh</p>
+                        </div>
+                        <div class="bg-rose-100 border-2 border-rose-300 rounded-xl p-4 mb-6">
+                            <p class="text-sm text-rose-900 font-semibold flex items-start gap-2">
+                                <i data-feather="alert-circle" class="w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                                <span>⚠️ DANGER: This will delete ALL transactions, notes, and alarms permanently. There
+                                    is no way to recover this data!</span>
+                            </p>
+                        </div>
+                        <button onclick="resetEverything()"
+                            class="w-full bg-gradient-to-r from-rose-600 to-red-600 text-white py-4 rounded-xl font-bold hover:from-rose-700 hover:to-red-700 active:scale-95 transition-all shadow-lg text-lg">
+                            🗑️ Reset All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Information Tab Content -->
+        <div id="content-admin" class="tab-content hidden">
+            <div class="max-w-4xl mx-auto">
+                <!-- Profile Card -->
+                <div
+                    class="bg-gradient-to-br from-indigo-50 to-purple-50 p-8 rounded-3xl shadow-xl border border-indigo-100 mb-8">
+                    <div class="flex flex-col md:flex-row items-center gap-8">
+                        <!-- Profile Picture -->
+                        <div class="relative">
+                            <div
+                                class="w-40 h-40 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 p-1 shadow-2xl">
+                                <div
+                                    class="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                                    <!-- Avatar Icon -->
+                                    <svg class="w-32 h-32 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div
+                                class="absolute -bottom-2 -right-2 bg-green-500 w-8 h-8 rounded-full border-4 border-white shadow-lg">
+                            </div>
+                        </div>
+
+                        <!-- Profile Info -->
+                        <div class="flex-1 text-center md:text-left">
+                            <h2 class="text-4xl font-bold text-gray-900 mb-2 neon-author"
+                                style="filter: none; -webkit-text-fill-color: transparent; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; background-clip: text;">
+                                Danuka Lakshan Athapaththu
+                            </h2>
+                            <p class="text-lg text-indigo-600 font-semibold mb-4">Full-Stack Developer & Designer</p>
+                            <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+                                <span
+                                    class="px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold">Administrator</span>
+                                <span
+                                    class="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">Creator</span>
+                                <span
+                                    class="px-4 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-semibold">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- About Section -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-indigo-100 rounded-lg">
+                                <i data-feather="info" class="w-5 h-5 text-indigo-600"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900">About</h3>
+                        </div>
+                        <p class="text-gray-600 leading-relaxed">
+                            Creator and administrator of the Finance Tracker application. Passionate about building
+                            beautiful, functional web applications that help people manage their finances effectively.
+                        </p>
+                    </div>
+
+                    <!-- Skills Section -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i data-feather="code" class="w-5 h-5 text-purple-600"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900">Skills</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span
+                                class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">HTML/CSS</span>
+                            <span
+                                class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">JavaScript</span>
+                            <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">UI/UX
+                                Design</span>
+                            <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">Web
+                                Development</span>
+                            <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">PDF
+                                Generation</span>
+                        </div>
+                    </div>
+
+                    <!-- Contact Section -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i data-feather="mail" class="w-5 h-5 text-green-600"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900">Contact</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3 text-gray-600">
+                                <i data-feather="at-sign" class="w-4 h-4"></i>
+                                <span class="text-sm">danuka7096@gmail.com</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-gray-600">
+                                <i data-feather="globe" class="w-4 h-4"></i>
+                                <span class="text-sm">Sri Lanka</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Application Info -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-orange-100 rounded-lg">
+                                <i data-feather="package" class="w-5 h-5 text-orange-600"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900">Application</h3>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Version:</span>
+                                <span class="font-semibold text-gray-900">2.0.0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Release:</span>
+                                <span class="font-semibold text-gray-900">February 2026</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Status:</span>
+                                <span class="font-semibold text-green-600">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Card -->
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-2xl shadow-2xl text-white">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-3">
+                        <i data-feather="star" class="w-6 h-6"></i>
+                        Application Features
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-start gap-3">
+                            <i data-feather="check-circle" class="w-5 h-5 mt-1 flex-shrink-0"></i>
+                            <div>
+                                <p class="font-semibold">Financial Tracking</p>
+                                <p class="text-sm text-indigo-100">Track income and expenses with ease</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i data-feather="check-circle" class="w-5 h-5 mt-1 flex-shrink-0"></i>
+                            <div>
+                                <p class="font-semibold">Personal Notes</p>
+                                <p class="text-sm text-indigo-100">Create notes with reminders</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i data-feather="check-circle" class="w-5 h-5 mt-1 flex-shrink-0"></i>
+                            <div>
+                                <p class="font-semibold">PDF Reports</p>
+                                <p class="text-sm text-indigo-100">Export beautiful financial reports</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i data-feather="check-circle" class="w-5 h-5 mt-1 flex-shrink-0"></i>
+                            <div>
+                                <p class="font-semibold">Alarm System</p>
+                                <p class="text-sm text-indigo-100">Set reminders for important notes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Footer with Author Animation -->
+    <footer
+        class="mt-auto py-12 bg-gradient-to-r from-gray-900 via-purple-900 to-gray-900 border-t border-gray-800 relative overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute top-0 left-1/4 w-64 h-64 bg-purple-500 rounded-full filter blur-3xl animate-pulse">
+            </div>
+            <div class="absolute bottom-0 right-1/4 w-64 h-64 bg-cyan-500 rounded-full filter blur-3xl animate-pulse"
+                style="animation-delay: 1s;"></div>
+        </div>
+
+        <div class="relative z-10 text-center float-animation">
+            <div
+                class="inline-block px-10 py-6 bg-gray-900/50 backdrop-blur-sm rounded-3xl border border-gray-700 pulse-border">
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-widest mb-3">
+                    Crafted with 💚 by
+                </p>
+                <h2 class="neon-author">
+                    Danuka Lakshan
+                </h2>
+                <p class="text-xs text-gray-500 mt-3 font-mono">
+                    Full-Stack Developer & Designer
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        // --- State ---
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        let currentTab = 'dashboard';
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+            renderTransactions();
+            renderNotes();
+            updateTypeStyles();
+
+            // Start clock
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // Update alarm display
+            updateAlarmDisplay();
+            setInterval(updateAlarmDisplay, 30000); // Update every 30 seconds
+
+            // Check alarms
+            checkAlarms();
+            setInterval(checkAlarms, 10000); // Check every 10 seconds
+
+            // Request notification permission
+            requestNotificationPermission();
+        });
+
+        // --- Tab Functions ---
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+
+            // Show selected content
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+
+            // Update tab buttons
+            document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('text-gray-600', 'hover:bg-gray-50');
+            });
+
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            document.getElementById(`tab-${tab}`).classList.remove('text-gray-600', 'hover:bg-gray-50');
+
+            feather.replace();
+        }
+
+        // --- Transaction Functions ---
+        function addTransaction(e) {
+            e.preventDefault();
+            const desc = document.getElementById('descInput').value;
+            const amount = parseFloat(document.getElementById('amountInput').value);
+            const type = document.querySelector('input[name="type"]:checked').value;
+
+            if (!desc || isNaN(amount) || amount <= 0) return;
+
+            const newTransaction = {
+                id: Date.now(),
+                description: desc,
+                amount: amount,
+                type: type,
+                date: new Date().toISOString()
+            };
+
+            transactions = [newTransaction, ...transactions];
+            saveAndRenderTransactions();
+
+            // Reset Form
+            document.getElementById('transactionForm').reset();
+            document.querySelector('input[name="type"][value="expense"]').checked = true;
+            updateTypeStyles();
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Are you sure you want to delete this entry?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                saveAndRenderTransactions();
+            }
+        }
+
+        function saveAndRenderTransactions() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            renderTransactions();
+        }
+
+        function renderTransactions() {
+            // Calculate Totals
+            let income = 0;
+            let expense = 0;
+            transactions.forEach(t => {
+                if (t.type === 'income') income += t.amount;
+                else expense += t.amount;
+            });
+            const balance = income - expense;
+
+            // Update Cards
+            document.getElementById('total_income').innerText = `LKR ${income.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+            document.getElementById('total_expense').innerText = `LKR ${expense.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+            const balEl = document.getElementById('net_balance');
+            balEl.innerText = `LKR ${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+            balEl.className = `text-2xl font-bold ${balance >= 0 ? 'text-indigo-600' : 'text-rose-600'}`;
+
+            document.getElementById('balance_indicator').className = `absolute top-0 left-0 w-1 h-full ${balance >= 0 ? 'bg-indigo-500' : 'bg-rose-500'}`;
+            document.getElementById('entryCount').innerText = `${transactions.length} entries`;
+
+            // Update List
+            const listEl = document.getElementById('transactionList');
+            if (transactions.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                        <p class="text-lg font-medium">No transactions yet</p>
+                        <p class="text-sm">Add your first income or expense!</p>
+                    </div>`;
+            } else {
+                listEl.innerHTML = transactions.map(t => {
+                    const isIncome = t.type === 'income';
+                    return `
+                    <div class="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl hover:bg-white hover:shadow-md border border-transparent hover:border-gray-100 transition-all group">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-full ${isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}">
+                                <i data-feather="${isIncome ? 'arrow-up' : 'arrow-down'}" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">${t.description}</p>
+                                <p class="text-xs text-gray-500">${new Date(t.date).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold ${isIncome ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${isIncome ? '+' : '-'} ${t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            </span>
+                            <button onclick="deleteTransaction(${t.id})" class="text-gray-400 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-colors">
+                                <i data-feather="trash-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+                feather.replace();
+            }
+
+            // Update Chart
+            updateChart(income, expense);
+        }
+
+        function updateChart(income, expense) {
+            const total = income + expense;
+            const chartTotalEl = document.getElementById('chartTotal');
+            const chartEl = document.getElementById('pieChart');
+
+            if (total === 0) {
+                chartEl.style.background = '#f3f4f6';
+                chartTotalEl.innerText = "LKR 0";
+                document.getElementById('incomeLegend').innerText = "Income 0%";
+                document.getElementById('expenseLegend').innerText = "Expense 0%";
+                return;
+            }
+
+            const incomePct = (income / total) * 100;
+            const expensePct = (expense / total) * 100;
+
+            chartEl.style.background = `conic-gradient(#10B981 0% ${incomePct}%, #F43F5E ${incomePct}% 100%)`;
+            chartTotalEl.innerText = `LKR ${total.toLocaleString(undefined, { compactDisplay: 'short', maximumFractionDigits: 1 })}`;
+
+            document.getElementById('incomeLegend').innerText = `Income ${incomePct.toFixed(1)}%`;
+            document.getElementById('expenseLegend').innerText = `Expense ${expensePct.toFixed(1)}%`;
+        }
+
+        // --- Notes Functions ---
+        function addNote(e) {
+            e.preventDefault();
+            const title = document.getElementById('noteTitleInput').value;
+            const content = document.getElementById('noteContentInput').value;
+            const enableAlarm = document.getElementById('enableAlarm').checked;
+            const alarmDateTime = document.getElementById('alarmDateTime').value;
+
+            if (!title || !content) return;
+
+            const newNote = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                date: new Date().toISOString(),
+                alarm: enableAlarm && alarmDateTime ? new Date(alarmDateTime).toISOString() : null
+            };
+
+            notes = [newNote, ...notes];
+            saveAndRenderNotes();
+
+            // Reset Form
+            document.getElementById('noteForm').reset();
+            document.getElementById('enableAlarm').checked = false;
+            toggleAlarmInput();
+        }
+
+        function deleteNote(id) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                notes = notes.filter(n => n.id !== id);
+                saveAndRenderNotes();
+            }
+        }
+
+        function clearAllNotes() {
+            if (notes.length === 0) {
+                alert('No notes to clear!');
+                return;
+            }
+            if (confirm('Are you sure you want to delete ALL notes? This cannot be undone!')) {
+                notes = [];
+                saveAndRenderNotes();
+            }
+        }
+
+        function toggleAlarmInput() {
+            const enabled = document.getElementById('enableAlarm').checked;
+            const alarmInputs = document.getElementById('alarmInputs');
+            if (enabled) {
+                alarmInputs.classList.remove('hidden');
+                // Set min datetime to now
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                document.getElementById('alarmDateTime').min = now.toISOString().slice(0, 16);
+            } else {
+                alarmInputs.classList.add('hidden');
+            }
+            feather.replace();
+        }
+
+        function saveAndRenderNotes() {
+            localStorage.setItem('notes', JSON.stringify(notes));
+            renderNotes();
+            updateAlarmDisplay();
+        }
+
+        function renderNotes() {
+            document.getElementById('noteCount').innerText = `${notes.length} notes`;
+
+            const notesEl = document.getElementById('notesList');
+            if (notes.length === 0) {
+                notesEl.innerHTML = `
+                    <div class="col-span-2 text-center py-16 text-gray-400 bg-white rounded-2xl border border-dashed border-gray-200 shadow-sm">
+                        <i data-feather="book-open" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                        <p class="text-lg font-medium">No notes yet</p>
+                        <p class="text-sm">Start writing your personal notes!</p>
+                    </div>`;
+                feather.replace();
+            } else {
+                notesEl.innerHTML = notes.map(n => {
+                    const hasAlarm = n.alarm && new Date(n.alarm) > new Date();
+                    const alarmPassed = n.alarm && new Date(n.alarm) <= new Date();
+                    return `
+                    <div class="note-card bg-white p-6 rounded-2xl shadow-md border border-gray-100 relative ${hasAlarm ? 'border-l-4 border-l-rose-500' : ''}">
+                        <button onclick="deleteNote(${n.id})" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
+                            <i data-feather="trash-2" class="w-4 h-4"></i>
+                        </button>
+                        ${hasAlarm ? '<div class="absolute top-4 right-12 text-rose-500"><i data-feather="bell" class="w-4 h-4"></i></div>' : ''}
+                        ${alarmPassed ? '<div class="absolute top-4 right-12 text-gray-400"><i data-feather="bell-off" class="w-4 h-4"></i></div>' : ''}
+                        <h3 class="text-lg font-bold text-gray-900 mb-2 pr-16">${n.title}</h3>
+                        <p class="text-sm text-gray-600 mb-4">${n.content}</p>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 text-xs text-gray-400">
+                                <i data-feather="calendar" class="w-3 h-3"></i>
+                                <span>Created: ${new Date(n.date).toLocaleString()}</span>
+                            </div>
+                            ${hasAlarm ? `
+                            <div class="flex items-center gap-2 text-xs text-rose-600 font-semibold">
+                                <i data-feather="clock" class="w-3 h-3"></i>
+                                <span>Reminder: ${new Date(n.alarm).toLocaleString()}</span>
+                            </div>` : ''}
+                            ${alarmPassed ? `
+                            <div class="flex items-center gap-2 text-xs text-gray-400">
+                                <i data-feather="check-circle" class="w-3 h-3"></i>
+                                <span>Reminder passed</span>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                `;
+                }).join('');
+                feather.replace();
+            }
+        }
+
+        // --- Clock & Alarm Functions ---
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            const dateStr = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            document.getElementById('currentTime').innerText = timeStr;
+            document.getElementById('currentDate').innerText = dateStr;
+        }
+
+        function updateAlarmDisplay() {
+            const now = new Date();
+            const activeAlarms = notes.filter(n => n.alarm && new Date(n.alarm) > now);
+
+            document.getElementById('alarmCount').innerText = activeAlarms.length;
+
+            if (activeAlarms.length > 0) {
+                // Sort by closest alarm
+                activeAlarms.sort((a, b) => new Date(a.alarm) - new Date(b.alarm));
+                const nextAlarm = activeAlarms[0];
+                const alarmTime = new Date(nextAlarm.alarm);
+                const timeUntil = Math.floor((alarmTime - now) / 1000 / 60); // minutes
+
+                let timeText = '';
+                if (timeUntil < 60) {
+                    timeText = `in ${timeUntil} minutes`;
+                } else if (timeUntil < 1440) {
+                    timeText = `in ${Math.floor(timeUntil / 60)} hours`;
+                } else {
+                    timeText = `in ${Math.floor(timeUntil / 1440)} days`;
+                }
+
+                document.getElementById('nextAlarm').innerHTML = `
+                    <strong>${nextAlarm.title}</strong><br>
+                    <span class="text-xs">${timeText} - ${alarmTime.toLocaleString()}</span>
+                `;
+            } else {
+                document.getElementById('nextAlarm').innerText = 'No upcoming alarms';
+            }
+        }
+
+        function checkAlarms() {
+            const now = new Date();
+            notes.forEach(note => {
+                if (note.alarm && !note.alarmTriggered) {
+                    const alarmTime = new Date(note.alarm);
+                    if (now >= alarmTime) {
+                        // Trigger alarm
+                        note.alarmTriggered = true;
+                        showAlarmNotification(note);
+                        saveAndRenderNotes();
+                    }
+                }
+            });
+        }
+
+        function showAlarmNotification(note) {
+            // Browser notification if supported
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Reminder: ' + note.title, {
+                    body: note.content,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="rgb(239, 68, 68)" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>'
+                });
+            }
+
+            // Visual alert
+            alert(`⏰ REMINDER!\n\n${note.title}\n\n${note.content}`);
+        }
+
+        // Request notification permission
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        // --- Reset Functions ---
+        function resetTransactions() {
+            if (transactions.length === 0) {
+                alert('No transactions to clear!');
+                return;
+            }
+
+            const confirmed = confirm(
+                `⚠️ WARNING!\n\nYou are about to delete ${transactions.length} transaction(s).\n\nThis action CANNOT be undone!\n\nAre you sure you want to continue?`
+            );
+
+            if (confirmed) {
+                const doubleCheck = confirm(
+                    '🚨 FINAL CONFIRMATION\n\nThis will permanently delete all your financial records.\n\nClick OK to proceed with deletion.'
+                );
+
+                if (doubleCheck) {
+                    transactions = [];
+                    localStorage.removeItem('transactions');
+                    renderTransactions();
+                    alert('✅ All transactions have been cleared successfully!');
+                }
+            }
+        }
+
+        function resetNotes() {
+            if (notes.length === 0) {
+                alert('No notes to clear!');
+                return;
+            }
+
+            const confirmed = confirm(
+                `⚠️ WARNING!\n\nYou are about to delete ${notes.length} note(s) and all associated alarms.\n\nThis action CANNOT be undone!\n\nAre you sure you want to continue?`
+            );
+
+            if (confirmed) {
+                const doubleCheck = confirm(
+                    '🚨 FINAL CONFIRMATION\n\nThis will permanently delete all your notes and reminders.\n\nClick OK to proceed with deletion.'
+                );
+
+                if (doubleCheck) {
+                    notes = [];
+                    localStorage.removeItem('notes');
+                    renderNotes();
+                    updateAlarmDisplay();
+                    alert('✅ All notes have been cleared successfully!');
+                }
+            }
+        }
+
+        function resetEverything() {
+            const totalItems = transactions.length + notes.length;
+
+            if (totalItems === 0) {
+                alert('No data to clear!');
+                return;
+            }
+
+            const confirmed = confirm(
+                `🚨 DANGER ZONE 🚨\n\nYou are about to delete:\n• ${transactions.length} transaction(s)\n• ${notes.length} note(s)\n\nTHIS WILL ERASE ALL YOUR DATA!\n\nThis action is PERMANENT and CANNOT be undone!\n\nAre you absolutely sure?`
+            );
+
+            if (confirmed) {
+                const doubleCheck = confirm(
+                    '⚠️ LAST WARNING ⚠️\n\nThis is your final chance to cancel.\n\nAll data will be permanently erased.\n\nType OK to confirm complete data deletion.'
+                );
+
+                if (doubleCheck) {
+                    const tripleCheck = confirm(
+                        '🔴 FINAL CONFIRMATION 🔴\n\nClick OK one last time to permanently delete everything.'
+                    );
+
+                    if (tripleCheck) {
+                        // Clear all data
+                        transactions = [];
+                        notes = [];
+                        localStorage.clear();
+
+                        // Re-render everything
+                        renderTransactions();
+                        renderNotes();
+                        updateAlarmDisplay();
+
+                        alert('✅ All data has been successfully cleared!\n\nYour application has been reset to factory settings.');
+
+                        // Switch to dashboard
+                        switchTab('dashboard');
+                    }
+                }
+            }
+        }
+
+        // --- UI Utils ---
+        function updateTypeStyles() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const btnIncome = document.getElementById('btn-income');
+            const btnExpense = document.getElementById('btn-expense');
+
+            const baseClass = "text-center py-3 rounded-xl border-2 border-transparent bg-gray-50 text-gray-500 font-medium transition-all flex items-center justify-center gap-2";
+            btnIncome.className = baseClass;
+            btnExpense.className = baseClass;
+
+            if (type === 'income') {
+                btnIncome.className = "text-center py-3 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-medium transition-all flex items-center justify-center gap-2 shadow-sm";
+            } else {
+                btnExpense.className = "text-center py-3 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 font-medium transition-all flex items-center justify-center gap-2 shadow-sm";
+            }
+        }
+
+        function downloadReport() {
+            if (transactions.length === 0) {
+                alert("No transactions to export!");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Calculate totals
+            let income = 0;
+            let expense = 0;
+            transactions.forEach(t => {
+                if (t.type === 'income') income += t.amount;
+                else expense += t.amount;
+            });
+            const balance = income - expense;
+
+            // Page dimensions
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            let yPos = 20;
+
+            // ===== HEADER SECTION =====
+            // Gradient background effect (simulated with rectangles)
+            doc.setFillColor(79, 70, 229); // Indigo
+            doc.rect(0, 0, pageWidth, 45, 'F');
+
+            doc.setFillColor(99, 102, 241); // Lighter indigo
+            doc.rect(0, 35, pageWidth, 10, 'F');
+
+            // Title
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(28);
+            doc.setFont(undefined, 'bold');
+            doc.text('FINANCIAL REPORT', pageWidth / 2, 25, { align: 'center' });
+
+            // Subtitle
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            doc.text('Comprehensive Income & Expense Analysis', pageWidth / 2, 35, { align: 'center' });
+
+            yPos = 55;
+
+            // ===== REPORT INFO =====
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(9);
+            const reportDate = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            doc.text(`Report Generated: ${reportDate}`, 20, yPos);
+            doc.text(`Total Entries: ${transactions.length}`, pageWidth - 20, yPos, { align: 'right' });
+
+            yPos += 15;
+
+            // ===== SUMMARY CARDS =====
+            const cardWidth = 55;
+            const cardHeight = 28;
+            const cardSpacing = 8;
+            const startX = (pageWidth - (cardWidth * 3 + cardSpacing * 2)) / 2;
+
+            // Income Card
+            doc.setFillColor(236, 253, 245); // Light green
+            doc.roundedRect(startX, yPos, cardWidth, cardHeight, 3, 3, 'F');
+            doc.setDrawColor(16, 185, 129); // Green border
+            doc.setLineWidth(0.5);
+            doc.roundedRect(startX, yPos, cardWidth, cardHeight, 3, 3, 'S');
+
+            doc.setTextColor(16, 185, 129);
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            doc.text('TOTAL INCOME', startX + cardWidth / 2, yPos + 8, { align: 'center' });
+            doc.setFontSize(16);
+            doc.text(`LKR ${income.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+                startX + cardWidth / 2, yPos + 20, { align: 'center' });
+
+            // Expense Card
+            const expenseX = startX + cardWidth + cardSpacing;
+            doc.setFillColor(254, 242, 242); // Light red
+            doc.roundedRect(expenseX, yPos, cardWidth, cardHeight, 3, 3, 'F');
+            doc.setDrawColor(239, 68, 68); // Red border
+            doc.roundedRect(expenseX, yPos, cardWidth, cardHeight, 3, 3, 'S');
+
+            doc.setTextColor(239, 68, 68);
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            doc.text('TOTAL EXPENSES', expenseX + cardWidth / 2, yPos + 8, { align: 'center' });
+            doc.setFontSize(16);
+            doc.text(`LKR ${expense.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+                expenseX + cardWidth / 2, yPos + 20, { align: 'center' });
+
+            // Balance Card
+            const balanceX = expenseX + cardWidth + cardSpacing;
+            const balanceColor = balance >= 0 ? [79, 70, 229] : [239, 68, 68]; // Indigo or Red
+            const balanceBg = balance >= 0 ? [238, 242, 255] : [254, 242, 242];
+
+            doc.setFillColor(...balanceBg);
+            doc.roundedRect(balanceX, yPos, cardWidth, cardHeight, 3, 3, 'F');
+            doc.setDrawColor(...balanceColor);
+            doc.roundedRect(balanceX, yPos, cardWidth, cardHeight, 3, 3, 'S');
+
+            doc.setTextColor(...balanceColor);
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            doc.text('NET BALANCE', balanceX + cardWidth / 2, yPos + 8, { align: 'center' });
+            doc.setFontSize(16);
+            doc.text(`LKR ${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+                balanceX + cardWidth / 2, yPos + 20, { align: 'center' });
+
+            yPos += cardHeight + 15;
+
+            // ===== TRANSACTION TABLE =====
+            doc.setTextColor(50, 50, 50);
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('Transaction Details', 20, yPos);
+
+            yPos += 8;
+
+            // Table header
+            doc.setFillColor(249, 250, 251);
+            doc.rect(20, yPos, pageWidth - 40, 10, 'F');
+
+            doc.setTextColor(75, 85, 99);
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            doc.text('DATE', 25, yPos + 7);
+            doc.text('DESCRIPTION', 60, yPos + 7);
+            doc.text('TYPE', 130, yPos + 7);
+            doc.text('AMOUNT (LKR)', pageWidth - 25, yPos + 7, { align: 'right' });
+
+            yPos += 12;
+
+            // Table rows
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(9);
+
+            transactions.forEach((t, index) => {
+                // Check if we need a new page
+                if (yPos > pageHeight - 40) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+
+                // Alternating row colors
+                if (index % 2 === 0) {
+                    doc.setFillColor(249, 250, 251);
+                    doc.rect(20, yPos - 5, pageWidth - 40, 8, 'F');
+                }
+
+                // Date
+                doc.setTextColor(100, 100, 100);
+                doc.text(new Date(t.date).toLocaleDateString(), 25, yPos);
+
+                // Description
+                doc.setTextColor(50, 50, 50);
+                const desc = t.description.length > 30 ? t.description.substring(0, 27) + '...' : t.description;
+                doc.text(desc, 60, yPos);
+
+                // Type
+                const isIncome = t.type === 'income';
+                doc.setTextColor(isIncome ? 16 : 239, isIncome ? 185 : 68, isIncome ? 129 : 68);
+                doc.setFont(undefined, 'bold');
+                doc.text(t.type.toUpperCase(), 130, yPos);
+
+                // Amount
+                doc.setFont(undefined, 'bold');
+                const amountText = `${isIncome ? '+' : '-'} ${t.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                doc.text(amountText, pageWidth - 25, yPos, { align: 'right' });
+
+                doc.setFont(undefined, 'normal');
+                yPos += 8;
+            });
+
+            // ===== FOOTER WITH AUTHOR =====
+            const footerY = pageHeight - 25;
+
+            // Decorative line
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.5);
+            doc.line(20, footerY, pageWidth - 20, footerY);
+
+            // Author section with gradient effect
+            doc.setFillColor(79, 70, 229);
+            doc.roundedRect(pageWidth / 2 - 45, footerY + 5, 90, 15, 2, 2, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(8);
+            doc.setFont(undefined, 'normal');
+            doc.text('Prepared by', pageWidth / 2, footerY + 10, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('DANUKA LAKSHAN', pageWidth / 2, footerY + 16, { align: 'center' });
+
+            // Small footer text
+            doc.setTextColor(150, 150, 150);
+            doc.setFontSize(7);
+            doc.setFont(undefined, 'normal');
+            doc.text('Finance Tracker Pro • Confidential Report', pageWidth / 2, footerY + 22, { align: 'center' });
+
+            // ===== SAVE PDF =====
+            const filename = `Financial_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(filename);
+        }
+    </script>
+</body>
+
+</html>
